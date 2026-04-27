@@ -77,10 +77,10 @@ export const createProperty = async (
       state,
       fullAddress,
       bedrooms,
-      bathrooms,
-      size,
+      bathroom,
       longitude,
       latitude,
+      size,
       amenities,
       isFeatured,
       isDraft,
@@ -88,15 +88,15 @@ export const createProperty = async (
       agentPhone,
       discount,
     } = req.body;
+   
 
-    if ((!propertyName || !fullAddress)) {
-      res.status(400).json({
-        success: false,
-        message: "Please fill out all required fields",
-      });
-      return;
-    }
+ const existingName = await   Property.findOne({propertyName});
+if(existingName){
+    res.status(400).json({message: "Title already exists"})
+}
+// If they get past these, the property saves!
 
+   
     // Upload images to Cloudinary
     const imageUrls: string[] = [];
 
@@ -109,7 +109,7 @@ export const createProperty = async (
         const result = await new Promise<{ secure_url: string }>(
           (resolve, reject) => {
             cloudinary.uploader
-            .upload_stream(
+              .upload_stream(
                 {
                   folder: "nestfinder/properties",
                   transformation: [{ width: 1200, quality: "auto" }],
@@ -146,13 +146,14 @@ export const createProperty = async (
       location: { city, state, fullAddress },
       propertyDetails: {
         bedrooms: Number(bedrooms) || 0,
-        bathroom: Number(bathrooms) || 0,
+        bathroom: Number(bathroom) || 0,
         size: Number(size) || 0,
       },
       coordinates: {
-        longitude,
-        latitude,
+        longitude: Number(longitude) || 0,
+        latitude: Number(latitude) || 0,
       },
+      
       images: imageUrls,
       amenities: parsedAmenities,
       isFeatured: isFeatured === "true" || isFeatured === true,
@@ -176,7 +177,6 @@ export const createProperty = async (
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
-
 // update property
 
 
@@ -214,11 +214,27 @@ export const updateProperty = async (
       discount,
     } = req.body;
 
+
+let existingImages: string[] = [];
+if (req.body.existingImages) {
+  try {
+    // We check if it's already an array or a JSON string
+    existingImages = typeof req.body.existingImages === "string" 
+      ? JSON.parse(req.body.existingImages) 
+      : req.body.existingImages;
+  } catch (e) {
+    existingImages = property.images; 
+  }
+} else {
+  existingImages = property.images; 
+}
+
+
     // Handle new image uploads if provided
-    let imageUrls: string[] = property.images;
+    let newImageUrls: string[] = property.images;
 
     if (req.files && req.files.images) {
-      imageUrls = [];
+      newImageUrls = [];
       const files = Array.isArray(req.files.images)
         ? req.files.images
         : [req.files.images];
@@ -237,10 +253,11 @@ export const updateProperty = async (
               .end(file.data);
           },
         );
-        imageUrls.push(result.secure_url);
+        newImageUrls.push(result.secure_url);
       }
     }
-
+   // 3. MERGE BOTH: Keep the old ones + Add the new ones
+const finalImageUrls = [...existingImages, ...newImageUrls];
     // Parse amenities safely
     let parsedAmenities = property.amenities;
     if (amenities) {
@@ -254,7 +271,7 @@ export const updateProperty = async (
 
     // Build update object — only include fields that were actually sent
     const updateData: Record<string, unknown> = {
-      images: imageUrls,
+      images:finalImageUrls ,
       amenities: parsedAmenities,
     };
 
@@ -284,14 +301,13 @@ export const updateProperty = async (
     if (bathroom !== undefined) updateData["propertyDetails.bathroom"] = Number(bathroom);
     if (size !== undefined) updateData["propertyDetails.size"] = Number(size);
 
-    // Only update nested coodsinates fields that were provided
+ // Only update nested coordinates fields that were provided
     if (longitude !== undefined) updateData["coordinates.longitude"] = Number(longitude);
-    if (latitude !== undefined) updateData["coordinates.latitude"] = Number(latitude);
-
+    if (latitude!== undefined) updateData["coordinates.latitude"] = Number(latitude);
     const updated = await Property.findByIdAndUpdate(
       req.params.id,
       { $set: updateData },  // Use $set to avoid wiping untouched fields
-      { new: true, runValidators: true },
+      { returnDocument:"after", runValidators: true },
     );
 
     res.status(200).json({
@@ -386,7 +402,6 @@ export const getDashboardStats = async (req: Request, res: Response): Promise<vo
       isDraft: true, 
       createdAt: { $lt: startOfThisMonth } 
     });
-    
     // ---- DATABASE OPERATOR CHEAT SHEET ----
     /*
        $lt  -> "Less Than"          (Earlier/Smaller than the value)
@@ -430,7 +445,7 @@ export const getDashboardStats = async (req: Request, res: Response): Promise<vo
       }
     });
   } catch (error) {
-    // If anything goes wrong, return a 500 server error
+
     res.status(500).json({ success: false, message: "Server error" });
   }
 };

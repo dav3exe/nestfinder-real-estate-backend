@@ -26,7 +26,7 @@ app.use(
   cors({
     origin: [
       process.env.CLIENT_URL || "http://localhost:5173",
-      "https://nestfinderpro2-frontend.vercel.app",
+      "https://nestfinder-real-estate.vercel.app/",
       "http://localhost:5173",
     ],
     credentials: true,
