@@ -22,19 +22,43 @@ const app = express();
 // ============================================================
 
 // CORS — allows frontend to talk to backend
+// app.use(
+//   cors({
+//     origin: [
+//       process.env.CLIENT_URL || "http://localhost:5173",
+//       "https://nestfinder-real-estate.vercel.app",
+//       "https://nestfinder-real-estate-fe9eszpfb-ogungbemi-tolulopes-projects.vercel.app",
+//       "http://localhost:5173",
+//     ],
+//     credentials: true,
+//     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+//     allowedHeaders: ["Content-Type", "Authorization"],
+//   })
+// );
+
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://nestfinder-real-estate.vercel.app",
+];
+
 app.use(
   cors({
-    origin: [
-      process.env.CLIENT_URL || "http://localhost:5173",
-      "https://nestfinder-real-estate.vercel.app",
-      "https://nestfinder-real-estate-fe9eszpfb-ogungbemi-tolulopes-projects.vercel.app",
-      "http://localhost:5173",
-    ],
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(null, true); // temporary allow all (safe for debugging)
+    },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
+
+app.options("*", cors());
 
 // Parse JSON
 app.use(express.json());
