@@ -1,14 +1,14 @@
 import express from "express";
 import dotenv from "dotenv";
 import connectDB from "./config/db";
-// import dns from 'dns';
+import dns from 'dns';
 import fileUpload from "express-fileupload";
 import authRoutes from "./routes/authRoutes"
 import propertyRoutes from "./routes/propertyRoutes"
 import enquiryRoutes from "./routes/enquiryRoutes"
 import cors from "cors"
 
-// dns.setServers(['8.8.8.8', '8.8.4.4']);
+dns.setServers(['8.8.8.8', '8.8.4.4']);
 // Load environment variables first
 dotenv.config();
 
@@ -27,8 +27,6 @@ app.use(
     origin: [
       process.env.CLIENT_URL || "http://localhost:5173",
       "https://nestfinder-real-estate.vercel.app",
-          "https://nestfinder-real-estate-fe9eszpfb-ogungbemi-tolulopes-projects.vercel.app",
-
       "http://localhost:5173",
     ],
     credentials: true,
