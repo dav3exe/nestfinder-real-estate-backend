@@ -27,6 +27,7 @@ app.use(
     origin: [
       process.env.CLIENT_URL || "http://localhost:5173",
       "https://nestfinder-real-estate.vercel.app",
+      "https://nestfinder-real-estate-fe9eszpfb-ogungbemi-tolulopes-projects.vercel.app",
       "http://localhost:5173",
     ],
     credentials: true,
