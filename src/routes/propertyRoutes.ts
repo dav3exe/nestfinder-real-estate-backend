@@ -7,7 +7,7 @@ import { protect, adminOnly } from "../middleware/authMiddleware";
 const router = Router()
 
 // public route - no token needed
-router.get("/", getProperties)
+router.get("/properties", getProperties)
 router.get("/:id", getProperty)
 
 
