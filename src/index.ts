@@ -1,14 +1,14 @@
 import express from "express";
 import dotenv from "dotenv";
 import connectDB from "./config/db";
-import dns from 'dns';
+// import dns from 'dns';
 import fileUpload from "express-fileupload";
 import authRoutes from "./routes/authRoutes"
 import propertyRoutes from "./routes/propertyRoutes"
 import enquiryRoutes from "./routes/enquiryRoutes"
 import cors from "cors"
 
-dns.setServers(['8.8.8.8', '8.8.4.4']);
+// dns.setServers(['8.8.8.8', '8.8.4.4']);
 // Load environment variables first
 dotenv.config();
 
